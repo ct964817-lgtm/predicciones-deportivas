@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicciones Deportivas</title>
+    <style>
+        /* Estilos visuales (CSS) */
+        body {
+            background-color: #0b1120; /* Fondo oscuro */
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { text-align: center; margin-bottom: 30px; }
+        
+        /* Contenedor de las tarjetas */
+        .contenedor-tarjetas {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        /* Estilo de cada Tarjeta */
+        .tarjeta {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 12px;
+            width: 350px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* Encabezado de la tarjeta (Equipos) */
+        .cabecera {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: #1e293b;
+            border-bottom: 1px solid #334155;
+        }
+        .equipo { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px;}
+        .equipo img { width: 30px; height: 30px; object-fit: contain; }
+        .vs { color: #64748b; font-size: 12px; font-weight: bold; }
+
+        /* Info de la liga */
+        .info-liga {
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+            padding: 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Tabla de predicciones */
+        .predicciones { padding: 15px; }
+        .fila-cabecera {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #64748b;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .fila-datos {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-top: 1px solid #1f2937;
+            font-size: 14px;
+        }
+        .mercado { color: #cbd5e1; width: 50%; }
+        .porcentajes { display: flex; width: 50%; justify-content: space-between; }
+        
+        /* Colores de los porcentajes */
+        .temp { color: #4ade80; font-weight: bold; width: 50%; text-align: center; } /* Verde */
+        .hist { color: #facc15; font-weight: bold; width: 50%; text-align: center; } /* Amarillo */
+    </style>
+</head>
+<body>
+
+    <h1>Lo mejor de lo mejor</h1>
+    <div class="contenedor-tarjetas" id="contenedor">
+        <!-- Aquí JavaScript inyectará las tarjetas -->
+    </div>
+
+    <script>
+        // Este script lee el archivo JSON y crea las tarjetas
+        async function cargarPredicciones() {
+            try {
+                // Leemos el archivo JSON que está en la misma carpeta
+                const respuesta = await fetch('./predicciones.json');
+                const partidos = await respuesta.json();
+                
+                const contenedor = document.getElementById('contenedor');
+
+                // Por cada partido en el JSON, creamos una tarjeta HTML
+                partidos.forEach(partido => {
+                    
+                    // Generamos las filas de predicciones
+                    let filasHTML = '';
+                    partido.predicciones.forEach(pred => {
+                        filasHTML += `
+                            <div class="fila-datos">
+                                <span class="mercado">${pred.mercado}</span>
+                                <div class="porcentajes">
+                                    <span class="temp">${(pred.temporada * 100).toFixed(0)}%</span>
+                                    <span class="hist">${(pred.historico * 100).toFixed(0)}%</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    // Creamos la tarjeta completa
+                    const tarjetaHTML = `
+                        <div class="tarjeta">
+                            <div class="cabecera">
+                                <div class="equipo">
+                                    <img src="${partido.local.logo}" alt="${partido.local.nombre}">
+                                    <span>${partido.local.nombre}</span>
+                                </div>
+                                <span class="vs">VS</span>
+                                <div class="equipo">
+                                    <span>${partido.visitante.nombre}</span>
+                                    <img src="${partido.visitante.logo}" alt="${partido.visitante.nombre}">
+                                </div>
+                            </div>
+                            <div class="info-liga">${partido.liga}</div>
+                            <div class="predicciones">
+                                <div class="fila-cabecera">
+                                    <span>MERCADO</span>
+                                    <div class="porcentajes">
+                                        <span class="temp">TEMPORADA</span>
+                                        <span class="hist">HISTÓRICO</span>
+                                    </div>
+                                </div>
+                                ${filasHTML}
+                            </div>
+                        </div>
+                    `;
+                    
+                    contenedor.innerHTML += tarjetaHTML;
+                });
+
+            } catch (error) {
+                console.error("Error al cargar los datos:", error);
+                document.getElementById('contenedor').innerHTML = "<p>Error al cargar los datos. Asegúrate de que el archivo predicciones.json esté en la misma carpeta.</p>";
+            }
+        }
+
+        // Ejecutar la función al abrir la página
+        cargarPredicciones();
+    </script>
+</body>
+</html>
